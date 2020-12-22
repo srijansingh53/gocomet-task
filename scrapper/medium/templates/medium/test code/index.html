@@ -1,0 +1,180 @@
+{% extends 'medium/base.html' %}
+
+{% block body%}
+    {% if not user %}
+        <div class="text-center">Please login to view your previous searched Tags</div>
+        
+    {% else %}
+        <h4 class="text-center">Top 10 Tags from your history</h4>
+        <div class="tags-history text-center">
+            {% for tag in track_tags %}
+                <button class="btn btn-secondary m-1 tag" type="button" onclick="tag_func('{{ tag.tag.tag }}')">{{ tag.tag.tag }}</button>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="message"></div>
+    <div class="tags text-center"></div>
+    <div class="blogs"></div>
+    <div><a class="btn btn-dark m-1 float-left" type="button" id="loadprevious" href="javascript:void(0);" data-page="0" style="display: none;">Load Previous</a></div>
+    <div class="page text-center"></div>
+    <div><a class="btn btn-dark m-1 float-right" type="button" id="loadnext" href="javascript:void(0);" data-page="1" style="display:none" >Load More Posts</a></div>
+    
+    <script>
+
+        // toggle function for hiding and showing description using button
+        function show_func(id, button) {
+            var id_ = "#" + id.toString();
+            $(id_).find(".card-text").toggleClass("d-none");
+        }
+
+        // function to fecth data for the tag which was clicked directly from page 
+        // instead of puting it in the form
+        function tag_func(tag) {
+            console.log("tag request came");
+            var next = $('#loadnext');
+            var prev = $('#loadprevious');
+            var page = 1;
+            // adding searching tag and disabiling clicks
+            $('.message').html("Searching for new tag please wait ...");
+            $( document.body ).css( 'pointer-events', 'none');
+            $.ajax({
+                type: 'GET',
+                url: '/load_article/',
+                data: {
+                    'tag': tag,
+                },
+                success: function(data) {
+                    console.log("success buddy");
+                    $(window).scrollTop(0);
+                    $('.tags').html(data.all_tags);
+                    $('.blogs').html(data.all_blogs);
+                    if (data.has_next) {
+                        next.data('page', page+1);
+                        next.data('tag', data.tag);
+                        next.show()
+                    } else {
+                        next.hide();
+                    }
+                    
+                    $('.message').html("");
+                    $( document.body ).css( 'pointer-events', 'auto');
+                    var status_btn =  $('#0').find('#status');
+                    status_btn.html("Crawling");
+                    status_btn.addClass('btn-outline-warning').removeClass('btn-outline-danger');
+                    
+                    setTimeout(() => {
+                        crawl(0);
+                    }, 0)
+                }, 
+                error: function(xhr, status, error){
+                    console.log('error occured');
+                }
+            });
+
+        }
+        
+        (function($) {
+            $('#loadnext').on('click', function() {
+                var next = $(this);
+                var prev = $('#loadprevious');
+                var page = next.data('page');
+                var tag = next.data('tag');
+                console.log("load next");
+                console.log(page);
+
+                // adding next page message and disabling clicks
+                $('.page').html("Loading next page please wait");
+                $( document.body ).css( 'pointer-events', 'none');
+                $.ajax({
+                    type: 'post',
+                    url: '/lazy_load_article/',
+                    data: {
+                        'page': page,
+                        'tag': tag,
+                        'csrfmiddlewaretoken': window.CSRF_TOKEN
+                    },
+                    success: function(data) {
+                        $(window).scrollTop(0);
+                        $('.blogs').html(data.all_blogs)
+                        if (data.has_next) {
+                            next.data('page', page+1);
+                            next.data('tag', data.tag);
+                            next.show();
+                        } else {
+                            next.hide();
+                        }
+                        
+                        if (data.has_previous) {
+                            prev.data('page', page-1);
+                            prev.data('tag', data.tag);
+                            prev.show();
+                        } else {
+                            prev.hide();
+                        }
+                        $('.page').html("");
+                        $( document.body ).css( 'pointer-events', 'auto');
+                        setTimeout(() => {
+                            crawl(0);
+                        }, 0)
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('error occured');
+                    }
+                });
+            });
+
+        }(jQuery));
+
+        (function($) {
+            $('#loadprevious').on('click', function() {
+                var prev = $(this);
+                var next = $('#loadnext');
+                var page = prev.data('page');
+                var tag = prev.data('tag');
+                console.log("load previous");
+                console.log(page, tag);
+
+                $('.page').html("Loading previous page please wait");
+                $( document.body ).css( 'pointer-events', 'none');
+                $.ajax({
+                    type: 'POST', 
+                    url: '/lazy_load_article/',
+                    data: {
+                        'page': page,
+                        'tag': tag, 
+                        'csrfmiddlewaretoken': window.CSRF_TOKEN,
+                    },
+                    success: function(data) {
+                        $(window).scrollTop(0);
+                        $('.blogs').html(data.all_blogs)
+
+                        if (data.has_next) {
+                            next.data('page', page+1);
+                            next.data('tag', tag);
+                            next.show()
+                        } else {
+                            next.hide()
+                        }
+
+                        if (data.has_previous) {
+                            prev.data('page', page-1);
+                            prev.data('tag', data.tag);
+                            prev.show();
+                        } else {
+                            prev.hide();
+                        }
+
+                        $('.page').html("");
+                        $( document.body ).css( 'pointer-events', 'auto');
+                        setTimeout(() => {
+                            crawl(0);
+                        }, 0)
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("error occured");
+                    }
+                });
+            });
+        }(jQuery));
+    </script>
+{% endblock %}

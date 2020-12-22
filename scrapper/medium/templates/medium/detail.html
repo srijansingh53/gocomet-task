@@ -1,0 +1,64 @@
+{% extends 'twitter/base.html' %}
+{% block title %}Details{% endblock %}
+{% block body %}
+<div class="container-fluid songs-container">
+
+    <div class="row">
+
+        <div class="text-center col-sm-12 col-md-12">
+                <div class="panel-body">
+                    <a class="text-center" href="{% url 'twitter:detail' handler.id %}">
+                        {% if handler.url_img %}
+                            <img src="{{ handler.url_img }}" class="text-center">
+                        {% else %}
+                            <h3>No image to display</h3>
+                        {% endif %}
+                    </a>
+                    <h3>{{ handler.name }}<br><small>@{{ handler.handle }}</small></h3>
+                    <h5>{{ handler.description }}</h5>
+                </div>
+        </div>
+    </div>
+    
+    
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                {% if tweets %}
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center" style="width: 70%">Tracked Tweets</th>
+                                <th class="text-center">Hate</th>
+                            </tr>
+                        </thead>
+                    
+                        <tbody>
+                        <!-- for loop for tweets goes here -->
+
+                                {% for tweet in tweets %}
+                                    <tr>
+                                        <td>
+                                            <h5 class="text-center">{{ tweet.tweet_text }}</h5>
+                                        </td>
+                                        <td>
+                                            {% if tweet.pred %}
+                                                <h5 class="text-center"><span class="glyphicon glyphicon-ok" style="color:red"></span></h5>
+                                            {% else %}
+                                                <h5 class="text-center"><span class="glyphicon glyphicon-remove" style="color:green"></span></h5>
+                                            {% endif %}
+
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <h4 class="text-center">The Twitter user has not posted any tweet after being tracked.</h4>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

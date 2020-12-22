@@ -1,0 +1,112 @@
+
+<nav class="navbar navbar-expand-md navbar-dark bg-primary fixed-top sticky-top">
+    <span class="navbar-text">
+        {% if user %}
+                <a class="nav-link">Hi {{ user }}</a> 
+        {% endif %}
+    </span>
+    <ul class="navbar-nav ml-auto mr-auto">
+        <li class="nav-item">
+            
+        </li>
+        <li class="nav-item">
+            <form id="searchform" action="">
+                <input type="text" name="tag" placeholder="Search Tag" required>
+                <button type="submit" class="btn" >Search</button>
+            </form>
+        </li>
+    </ul>
+    <span class="navbar-text">
+        {% if user %}
+        <a href="{% url 'medium:logout' %}" class="nav-link">Logout</a>
+        {% else %}
+        <a href="{% url 'medium:login' %}" class="nav-link">Login</a>
+        {% endif %}
+
+    </span>
+</nav>
+
+<script>
+
+    // function to search from nav bar
+    // fetched all the data from the backend and places it in proper div tag
+    // and trigger the crawl function
+    $(document).ready(function() {
+        $('#searchform').submit(function(event) {
+            var tag = $('input[name=tag]').val();
+            var next = $('#loadnext');
+            var prev = $('#loadprevious');
+            var page = 1;
+            console.log(tag);
+
+            // adding searching tag and disabiling clicks
+            $('.message').html("Searching ...");
+            $( document.body ).css( 'pointer-events', 'none');
+            $( document.body ).css( 'opacity', '1');
+            $.ajax({
+                type: 'GET',
+                url: '/load_article/',
+                data: {
+                    'tag': tag,
+                },
+                success: function(data){
+                    console.log('success in sending request');
+                    $(window).scrollTop(0);
+                    $('.tags').html(data.all_tags)
+                    $('.blogs').html(data.all_blogs)
+
+                    $('.message').html("");
+                    $( document.body ).css( 'pointer-events', 'auto');
+
+                    var status_btn =  $('#0').find('#status');
+                    status_btn.html("Crawling");
+                    status_btn.addClass('btn-outline-warning').removeClass('btn-outline-danger');
+                    setTimeout(() => {
+                        crawl(0);
+                    }, 0)
+                },
+                error: function(xhr, status, error){
+                    console.log('error occured');
+                }
+            });
+            event.preventDefault();
+        })
+    });
+
+    // crawling function which will crawl one by one every blog on the current page
+    function crawl(id) {
+        if (id > 9){
+            return;
+        }
+        var id_ = "#" + id.toString();
+        console.log(id_);
+
+        var div = $(id_);
+        var medium = div.find('#url');
+        console.log(medium.attr('href'));
+        $.ajax({
+            type: 'GET',
+            url: '/load_description/',
+            data: {
+                'link': medium.attr('href'),
+            },
+            success: function(data) {
+                div.find('.card-text').html(data.description);
+                var status_btn = div.find('#status');
+                status_btn.html("Crawled");
+                status_btn.addClass('btn-outline-success').removeClass('btn-outline-warning');
+                id = id + 1;
+                id_ = "#" + id.toString();
+                $(id_).find('#status').html("Crawling");
+                $(id_).find('#status').addClass('btn-outline-warning').removeClass('btn-outline-danger');
+                setTimeout (() => {
+                    crawl(id);
+                }, 0)
+            }
+        });
+    };
+
+    
+
+
+</script>

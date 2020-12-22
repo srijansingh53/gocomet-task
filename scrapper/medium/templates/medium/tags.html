@@ -1,0 +1,7 @@
+<h4>Related Tags:</h4>
+{% for tag in tags %}
+<!-- 	<script type="text/javascript">
+		console.log({{ tag.tag.tag }});
+	</script> -->
+    <button class="btn btn-light btn-sm s-1 tag" type="button" onclick="related_tag_blogs('{{ tag.tag }}')">{{ tag.tag }}</button>
+{% endfor %}

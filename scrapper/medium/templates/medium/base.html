@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Medium Scrapper{% endblock %}</title>
+    {% load static %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon_he.ico' %}"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=sans-serif" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="{% static 'medium/style.css' %}"/>
+    <script type="text/javascript">
+        window.CSRF_TOKEN = "{{ csrf_token }}"
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="col-md-6 offset-md-3 text-center">
+
+            <!-- Header -->
+            
+            <a class="navbar-brand" href="{% url 'medium:index' %}">Scrapium</a>
+
+            <!-- Items 
+            <div class="collapse navbar-collapse" id="topNavBar">
+                
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="#">
+                            <span class="glyphicon glyphicon-off" aria-hidden="true"></span>&nbsp; Dummy
+                        </a>
+                    </li>
+                </ul>
+            </div>-->
+
+        </div>
+    </nav><br><br>
+    <div class="container text-center">
+            <form id="searchform" class="form-inline justify-content-center" role="search" action="">
+                <div class="form-group text-center">
+                    <input type="text" class="form-control" name="tag" value="" placeholder="Search Articles" required>
+                </div>
+                <button type="submit" class="btn btn-dark">Search
+                </button>
+            </form>
+        
+    </div>
+    <div class="container text-center" id="message"></div>
+    <div class="container" id="tags"></div>
+    <div class="container" id="blogs"></div>
+    <div><a id="load-prev" class="btn btn-info m-1 float-left" type="button" href="javascript:void(0);" data-page="0" style="display: none;">Previous</a></div>
+    <div id="page-status" class="text-center"></div>
+    <div><a id="load-next" class="btn btn-info m-1 float-right" type="button" href="javascript:void(0);" data-page="1" style="display:none" >Load More</a></div>
+    {% block body %}
+    {% endblock %}
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags %}  <script>alert("{{ message }}")</script> {% endif %}
+
+    {% endfor %}
+
+{% endif %}
+</body>
+</html>
+
+<script>
+
+    // function to search and fetch all the data via ajax call and places it in proper div tag
+    // and trigger the crawl function
+    $(document).ready(function() {
+        $('#searchform').submit(function(event) {
+            // adding searching tag and disabiling clicks
+            var tag = $('input[name=tag]').val();
+            var next = $('#load-next');
+            var prev = $('#load-prev');
+            var page = 1;
+            console.log(tag);
+
+            $('#message').html("Searching ...");
+            $( document.body ).css( 'pointer-events', 'none');
+            $( document.body ).css( 'opacity', '1');
+            $.ajax({
+                type: 'GET',
+                url: '/search/',
+                data: {
+                    'tag': tag,
+                },
+                success: function(data){
+                    console.log('success');
+                    $(window).scrollTop(0);
+                    $('#message').html("");
+                    $('#tags').html(data.tags);
+                    $('#blogs').html(data.blogs);
+
+                    // show or hide the next button
+                    if (data.has_next) {
+                        next.data('page', page+1);
+                        next.data('tag', data.tag);
+                        next.show()
+                    }
+                    else {
+                        next.hide();
+                    }
+                    // show wor hide the prev button
+                    if (data.has_previous) {
+                        prev.data('page', page-1);
+                        prev.data('tag', data.tag);
+                        prev.show();
+                    }
+                    else {
+                        prev.hide();
+                    }
+                    $( document.body ).css( 'pointer-events', 'auto');
+
+                    // var status_btn =  $('#0').find('#status');
+                    // status_btn.html("Crawling");
+                    // status_btn.addClass('btn-outline-warning').removeClass('btn-outline-danger');
+                    // setTimeout(() => {
+                    //     crawl(0);
+                    // }, 0)
+                },
+                error: function(xhr, status, error){
+                    console.log('error occured');
+                    $( document.body ).css( 'pointer-events', 'auto');
+                }
+            });
+            event.preventDefault();
+        })
+    });
+
+    //function to search other blogs based on related tags via ajax call
+    function related_tag_blogs(tag) {
+            console.log(tag);
+            var next = $('#load-next');
+            var prev = $('#load-prev');
+            var page = 1;
+            // adding searching tag and disabiling clicks
+            $('#message').html("Searching for new tag please wait ...");
+            $( document.body ).css( 'pointer-events', 'none');
+            $.ajax({
+                type: 'GET',
+                url: '/search/',
+                data: {
+                    'tag': tag,
+                },
+                success: function(data) {
+                    console.log("success");
+                    $(window).scrollTop(0);
+                    $('#message').html("");
+                    $('#tags').html(data.tags);
+                    $('#blogs').html(data.blogs);
+
+                    // show wor hide the next button
+                    if (data.has_next) {
+                        next.data('page', page+1);
+                        next.data('tag', data.tag);
+                        next.show()
+                    }
+                    else {
+                        next.hide();
+                    }
+
+                    // show wor hide the prev button
+                    if (data.has_prev) {
+                        prev.data('page', page-1);
+                        prev.data('tag', data.tag);
+                        prev.show();
+                    }
+                    else {
+                        prev.hide();
+                    }
+                    
+                    $( document.body ).css( 'pointer-events', 'auto');
+                    // var status_btn =  $('#0').find('#status');
+                    // status_btn.html("Crawling");
+                    // status_btn.addClass('btn-outline-warning').removeClass('btn-outline-danger');
+                    
+                    // setTimeout(() => {
+                    //     crawl(0);
+                    // }, 0)
+                }, 
+                error: function(xhr, status, error){
+                    console.log('error occured');
+                    $( document.body ).css( 'pointer-events', 'auto');
+                }
+            });
+
+        };
+
+    (function($) {
+        $('#load-next').on('click', function(){
+            var next = $(this);
+            var prev = $('#load-prev');
+            var page = next.data('page');
+            var tag = next.data('tag');
+            console.log("loading next page", page);
+
+            // adding next page message and disabling clicks
+            $('#page-status').html("Loading next page please wait");
+            $( document.body ).css( 'pointer-events', 'none');
+            $.ajax({
+                type: 'post',
+                url: '/other_page/',
+                data: {
+                    'page': page,
+                    'tag': tag,
+                    'csrfmiddlewaretoken': window.CSRF_TOKEN
+                },
+                success: function(data) {
+                    $(window).scrollTop(0);
+                    $('#page-status').html("");
+                    $('#blogs').html(data.blogs)
+
+                    if (data.has_next) {
+                        next.data('page', page+1);
+                        next.data('tag', data.tag);
+                        next.show();
+                    }
+                    else {
+                        next.hide();
+                    }
+                    
+                    if (data.has_prev) {
+                        console.log('yaha aaya');
+                        prev.data('page', page-1);
+                        prev.data('tag', data.tag);
+                        prev.show();
+                    }
+                    else {
+                        prev.hide();
+                    }
+                    console.log('next changed to', next.data('page'));
+                    console.log('prev changed to', prev.data('page'));
+                    $( document.body ).css( 'pointer-events', 'auto');
+                    // setTimeout(() => {
+                    //     crawl(0);
+                    // }, 0)
+                },
+                error: function(xhr, status, error) {
+                    console.log('error occured');
+                    $( document.body ).css( 'pointer-events', 'auto');
+                }
+
+            });
+        });
+    }(jQuery));
+
+
+    (function($) {
+        $('#load-prev').on('click', function(){
+            var prev = $(this);
+            var next = $('#load-next');
+            var page = prev.data('page');
+            var tag = prev.data('tag');
+            console.log("loading previous page", page);
+
+            // adding next page message and disabling clicks
+            $('#page-status').html("Loading previous page please wait");
+            $( document.body ).css( 'pointer-events', 'none');
+            $.ajax({
+                type: 'post',
+                url: '/other_page/',
+                data: {
+                    'page': page,
+                    'tag': tag,
+                    'csrfmiddlewaretoken': window.CSRF_TOKEN
+                },
+                success: function(data) {
+                    $(window).scrollTop(0);
+                    $('#page-status').html("");
+                    $('#blogs').html(data.blogs)
+
+                    if (data.has_next) {
+                        next.data('page', page+1);
+                        next.data('tag', data.tag);
+                        next.show();
+                    }
+                    else {
+                        next.hide();
+                    }
+                    
+                    if (data.has_prev) {
+                        prev.data('page', page-1);
+                        prev.data('tag', data.tag);
+                        prev.show();
+                    }
+                    else {
+                        prev.hide();
+                    }
+                    console.log('next changed to', next.data('page'));
+                    console.log('prev changed to', prev.data('page'));
+                    $( document.body ).css( 'pointer-events', 'auto');
+                    // setTimeout(() => {
+                    //     crawl(0);
+                    // }, 0)
+                },
+                error: function(xhr, status, error) {
+                    console.log('error occured');
+                    $( document.body ).css( 'pointer-events', 'auto');
+                }
+
+            });
+        });
+    }(jQuery));
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!--
+    // crawling function which will crawl one by one every blog on the current page
+    function crawl(id) {
+        if (id > 9){
+            return;
+        }
+        var id_ = "#" + id.toString();
+        console.log(id_);
+
+        var div = $(id_);
+        var medium = div.find('#url');
+        console.log(medium.attr('href'));
+        $.ajax({
+            type: 'GET',
+            url: '/load_description/',
+            data: {
+                'link': medium.attr('href'),
+            },
+            success: function(data) {
+                div.find('.card-text').html(data.description);
+                var status_btn = div.find('#status');
+                status_btn.html("Crawled");
+                status_btn.addClass('btn-outline-success').removeClass('btn-outline-warning');
+                id = id + 1;
+                id_ = "#" + id.toString();
+                $(id_).find('#status').html("Crawling");
+                $(id_).find('#status').addClass('btn-outline-warning').removeClass('btn-outline-danger');
+                setTimeout (() => {
+                    crawl(id);
+                }, 0)
+            }
+        });
+    };
+
+    
+
+
+</script>-->
