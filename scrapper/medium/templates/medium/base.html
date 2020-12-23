@@ -114,12 +114,13 @@
                     }
                     $( document.body ).css( 'pointer-events', 'auto');
 
-                    // var status_btn =  $('#0').find('#status');
-                    // status_btn.html("Crawling");
-                    // status_btn.addClass('btn-outline-warning').removeClass('btn-outline-danger');
-                    // setTimeout(() => {
-                    //     crawl(0);
-                    // }, 0)
+                    var status_btn =  $('#0').find('#status');
+                    status_btn.html("Crawling");
+                    status_btn.removeClass('badge-danger').addClass('badge-warning');
+                    //calling crawl function to crawl 0th indexed blog 
+                    setTimeout(() => {
+                        crawl(0);
+                    }, 0)
                 },
                 error: function(xhr, status, error){
                     console.log('error occured');
@@ -304,24 +305,13 @@
             });
         });
     }(jQuery));
-</script>
 
+    // toggle function for hiding and showing description using button
+        function show_func(id, button) {
+            var id_ = "#" + id.toString();
+            $(id_).find(".card-text").toggleClass("d-none");
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <!--
     // crawling function which will crawl one by one every blog on the current page
     function crawl(id) {
         if (id > 9){
@@ -335,19 +325,19 @@
         console.log(medium.attr('href'));
         $.ajax({
             type: 'GET',
-            url: '/load_description/',
+            url: '/crawl_details/',
             data: {
                 'link': medium.attr('href'),
             },
             success: function(data) {
-                div.find('.card-text').html(data.description);
+                div.find('.card-text').html(data.detail);
                 var status_btn = div.find('#status');
                 status_btn.html("Crawled");
-                status_btn.addClass('btn-outline-success').removeClass('btn-outline-warning');
+                status_btn.removeClass('badge-warning').addClass('badge-success');
                 id = id + 1;
                 id_ = "#" + id.toString();
                 $(id_).find('#status').html("Crawling");
-                $(id_).find('#status').addClass('btn-outline-warning').removeClass('btn-outline-danger');
+                $(id_).find('#status').removeClass('badge-danger').addClass('badge-warning');
                 setTimeout (() => {
                     crawl(id);
                 }, 0)
@@ -357,5 +347,4 @@
 
     
 
-
-</script>-->
+</script>

@@ -4,10 +4,10 @@ from django.template import loader
 from django.contrib import messages
 
 # from .forms import UserForm
-# from .models import Tags
+from .models import Tags, Blogs, Responses
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-from .scrap2 import get_blogs
+from .scrap2 import get_blogs, get_details
 
 # Create your views here.
 def index(request):
@@ -19,10 +19,18 @@ def search(request):
     if request.method == 'GET':
         tag = request.GET.get("tag", None)
         print(tag)
+
+        # saving to Tags models
+        link = "https://medium.com/tag/" + tag.replace(' ', '-')
+        tag_db = Tags(tags=tag.lower(), link=link.lower())
+        tag_db.save()
+        print('tag_saved')
+
+        #scrapping latest blogs
         data = get_blogs(str(tag),page=1)
 
         if data is None:
-            JsonResponse({'tags': "<h2>Search a Valid Tag</h2>",}, status=200)
+            JsonResponse({'tags': "<h2>Incorrect Query. Please search a valid Tag</h2>",}, status=200)
 
         blogs_per_page = 10
         paginator = Paginator(data['blogs'], blogs_per_page)
@@ -32,6 +40,20 @@ def search(request):
 
         # print(paginator.page(1).has_next())
         blogs = paginator.page(1)
+
+        # saving the blogs to database
+        for blog in blogs:
+            print(blog['title'])
+            blog_db = Blogs(
+                title = blog['title'], 
+                link = blog['link'], 
+                writer = blog['writer'],
+                )
+
+            blog_db.save()
+            print("blog saved")
+
+
         if len(blogs)==0:
             blogs_html = loader.render_to_string('medium/blogs.html', {'error': 'No blogs found. Please enter valid tag'})
         else:
@@ -62,6 +84,17 @@ def other_page(request):
             blogs = paginator.page(page)
         except EmptyPage:
             blogs = paginator.page(paginator.num_pages)
+        
+        # saving the blogs to database
+        for blog in blogs:
+            blog_db = Blogs(
+                title = blog['title'], 
+                link = blog['link'], 
+                writer = blog['writer'],
+                )
+            
+            blog_db.save()
+            print("blog saved")
 
         blogs_html = loader.render_to_string('medium/blogs.html', {'blogs': blogs})
         print(blogs.has_previous())
@@ -70,3 +103,35 @@ def other_page(request):
             'tag': tag,
             'has_next': blogs.has_next(),
             'has_prev': blogs.has_previous()}, status = 200)
+
+
+def crawl_details(request):
+
+    if request.method=='GET':
+        link = request.GET.get('link')
+
+        data = get_details(link)
+
+        # saving article description to database
+        date,time = data['date_time'].split('\u00b7')
+        print(date, time)
+
+
+        blog = Blogs.objects.get(link = link)
+        blog.date = date
+        blog.time = time
+        blog.num_claps = data['num_claps']
+        blog.num_responses = data['num_responses']
+        blog.set_tags(data['related_tags'])
+        blog.save()
+
+        # saving responses to database
+        for comment in data['comments_list']:
+            try:
+                comment_db = Responses(blog=blog, responder = comment['responder'], comment = comment['comment'])
+                comment_db.save()
+            except:
+                pass
+
+    detail_html = loader.render_to_string('medium/detail.html', data)
+    return JsonResponse({"detail": detail_html}, status = 200)
