@@ -31,7 +31,7 @@ def search(request):
         data = get_blogs(str(tag),page=1)
 
         if data is None:
-            JsonResponse({'tags': "<h2>Incorrect Query. Please search a valid Tag</h2>",}, status=200)
+            return JsonResponse({'tags': "<h2>Incorrect Query. Please search a valid Tag</h2>",}, status=200)
 
         blogs_per_page = 10
         paginator = Paginator(data['blogs'], blogs_per_page)
