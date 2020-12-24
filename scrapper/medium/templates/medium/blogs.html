@@ -11,8 +11,8 @@
                 <div class="card-text d-none">Crawling in process. Please wait.....</div>
                 <!--<button type="button" id="status" class="btn btn-outline-danger float-right">Pending</button>-->
                 <span class="badge badge-danger float-right" id="status">Pending</span>
-                <a class="btn btn-primary" id="url" role="button"  href="{{ blog.link }}" target="_blank">View on Medium</a>
-                <button type="button" class="btn btn-outline-success" onclick="show_details('{{ forloop.counter0 }}', this)">Show Description</button>
+                <a class="btn btn-primary btn-sm" id="url" role="button"  href="{{ blog.link }}" target="_blank">See on Medium</a>
+                <button type="button" class="btn btn-outline-success btn-sm" onclick="show_details('{{ forloop.counter0 }}', this)">Show Details</button>
             </div>
         </div>
     {% endfor %}

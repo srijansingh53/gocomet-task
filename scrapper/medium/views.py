@@ -8,7 +8,7 @@ from django.core.serializers import serialize
 from .models import Tags, Blogs, Responses
 from django.core.paginator import Paginator, EmptyPage
 
-from .scrap2 import get_blogs, get_details
+from .scrape import get_blogs, get_details
 
 # Create your views here.
 def index(request):
