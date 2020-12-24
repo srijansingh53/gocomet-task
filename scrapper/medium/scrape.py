@@ -1,5 +1,7 @@
 import selenium
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
 import json
 import time
 from selenium.common.exceptions import NoSuchElementException
@@ -8,7 +10,10 @@ from selenium.common.exceptions import NoSuchElementException
 # fetch blogs based on tags
 def get_blogs(tag,page):
     path = "F:/Downloads/Compressed/chromedriver"
-    driver = webdriver.Chrome(executable_path=path)
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--window-size=1920,1080')
+    driver = webdriver.Chrome(executable_path=path, options=options)
     
     link = "https://medium.com/tag/" + tag
     driver.get(link)
@@ -60,7 +65,11 @@ def get_details(link):
     start = time.time()
 
     path = "F:/Downloads/Compressed/chromedriver"
-    driver = webdriver.Chrome(executable_path=path)
+
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--window-size=1920,1080')
+    driver = webdriver.Chrome(executable_path=path, options=options)
     
     driver.get(link)
     time.sleep(5)
