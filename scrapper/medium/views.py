@@ -2,10 +2,11 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.template import loader
 from django.contrib import messages
+from django.core.serializers import serialize
 
 # from .forms import UserForm
 from .models import Tags, Blogs, Responses
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator, EmptyPage
 
 from .scrap2 import get_blogs, get_details
 
@@ -43,7 +44,7 @@ def search(request):
 
         # saving the blogs to database
         for blog in blogs:
-            print(blog['title'])
+            # print(blog['title'])
             blog_db = Blogs(
                 title = blog['title'], 
                 link = blog['link'], 
@@ -72,7 +73,7 @@ def other_page(request):
     if request.method=='POST':
         page = request.POST.get('page')
         page = int(page)
-        print(page)
+        # print(page)
         tag = request.POST.get('tag')
 
         data = get_blogs(str(tag), page)
@@ -113,13 +114,13 @@ def crawl_details(request):
         data = get_details(link)
 
         # saving article description to database
-        date,time = data['date_time'].split('\u00b7')
+        date,time = data['date_time'].split('·')
         print(date, time)
 
 
         blog = Blogs.objects.get(link = link)
         blog.date = date
-        blog.time = time
+        blog.read_time = time
         blog.num_claps = data['num_claps']
         blog.num_responses = data['num_responses']
         blog.set_tags(data['related_tags'])
@@ -131,7 +132,14 @@ def crawl_details(request):
                 comment_db = Responses(blog=blog, responder = comment['responder'], comment = comment['comment'])
                 comment_db.save()
             except:
-                pass
+                pass #passing because already present
 
     detail_html = loader.render_to_string('medium/detail.html', data)
     return JsonResponse({"detail": detail_html}, status = 200)
+
+def show_history(request):
+    if request.method=='GET':
+        searched_tags = Tags.objects.all()
+
+        searched_tags_html = loader.render_to_string('medium/history.html', {'searched_tags': searched_tags})
+        return JsonResponse({"history_tags": searched_tags_html}, status = 200)

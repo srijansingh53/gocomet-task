@@ -1,16 +1,15 @@
 <div>{{ date_time }}</div>
 <br>
-<div>Time taken to fetch {{ burst_time }} seconds</div>
+<h5>Related tags:
 {% for tag in related_tags %}    
-        <button class="btn btn-light btn-sm s-1 tag" type="button" onclick="tag_func('{{ tag }}')">{{ tag }}</button>
+        <button class="btn btn-light btn-sm s-1 tag" type="button" onclick="related_tag_blogs('{{ tag }}')">{{ tag }}</button>
 {% endfor %}
-
+</h5>
 <div>
     <span>
         <h5>Claps: </h5>{{ num_claps }}
     </span>
 </div>
-
 
 <div>
     <h5>Respones: </h5>{{ num_responses }}
@@ -21,3 +20,5 @@
     <div>Comment : {{ comment.comment }}</div>
     <br>
 {% endfor %}
+
+<div>Time taken to fetch {{ burst_time }} seconds</div>

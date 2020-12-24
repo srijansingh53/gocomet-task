@@ -1,0 +1,7 @@
+<h4>Searched Tags:</h4>
+{% for tag in searched_tags %}
+<!-- 	<script type="text/javascript">
+		console.log({{ tag.tag.tag }});
+	</script> -->
+    <button class="btn btn-light btn-sm s-1 tag" type="button" onclick="related_tag_blogs('{{ tag.tags }}')">{{ tag.tags }}</button>
+{% endfor %}

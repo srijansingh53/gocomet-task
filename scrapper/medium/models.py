@@ -1,7 +1,4 @@
-from django.contrib.auth.models import Permission, User
 from django.db import models
-from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator
 
 import json
 

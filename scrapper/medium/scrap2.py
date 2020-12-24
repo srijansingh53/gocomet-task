@@ -40,15 +40,15 @@ def get_blogs(tag,page):
     blogs = []
 
     for blog in blogs_list:
-        writerPublicationDate = blog.find_element_by_class_name("postMetaInline-authorLockup")
-        writerPublicationDate = writerPublicationDate.find_elements_by_tag_name("a")
+        temp = blog.find_element_by_class_name("postMetaInline-authorLockup")
+        temp = temp.find_elements_by_tag_name("a")
 
         # will currently deal only in writer and date
         title = blog.find_element_by_tag_name('h3')
         blogs.append({
-            'writer': writerPublicationDate[0].text,
-            'date': writerPublicationDate[-1].text,
-            'link': writerPublicationDate[-1].get_attribute('href'),
+            'writer': temp[0].text,
+            'date': temp[-1].text,
+            'link': temp[-1].get_attribute('href'),
             'title': title.text,
         })
     driver.close()
@@ -168,21 +168,24 @@ def get_details(link):
         n = int(num_responses)
         n = min(5,n)
         if n==1:
-            responder = driver.find_element_by_xpath("//*[@id='root']/div/div[3]/div[2]/div[2]/div[3]/div/div/div/div[1]/div/div[2]/div/a/h4")
-            # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[1]/div/div[2]/div/a/h4
-            # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[1]/div/div[2]/div/a/h4
-            comment_text = driver.find_element_by_xpath("//*[@id='root']/div/div[3]/div[2]/div[2]/div[3]/div/div/div/div[2]/pre/div/h4/div")
-            # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[3]/pre/div/h4/div
-            # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[2]/pre/div/h4/div
-            
+            try:
+                responder = driver.find_element_by_xpath("//*[@id='root']/div/div[3]/div[2]/div[2]/div[3]/div/div/div/div[1]/div/div[2]/div/a/h4")
+                # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[1]/div/div[2]/div/a/h4
+                # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[1]/div/div[2]/div/a/h4
+                comment_text = driver.find_element_by_xpath("//*[@id='root']/div/div[3]/div[2]/div[2]/div[3]/div/div/div/div[2]/pre/div/h4/div")
+                # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[3]/pre/div/h4/div
+                # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[2]/pre/div/h4/div
+            except:
+                comments_list = []
         else:
 
             for i in range(1,n+1):
                 try:
                     responder = driver.find_element_by_xpath("//*[@id='root']/div/div[3]/div[2]/div[2]/div[3]/div["+str(i)+"]/div/div/div[1]/div/div[2]/div/a/h4")
-                    
+                    # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[1]/div/div[2]/div/a/h4
                     comment_text = driver.find_element_by_xpath("//*[@id='root']/div/div[3]/div[2]/div[2]/div[3]/div["+str(i)+"]/div/div/div[2]/pre/div/h4/div")
                     # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[1]/div/div[2]/div/a/h4
+                    # //*[@id="root"]/div/div[3]/div[2]/div[2]/div[3]/div[1]/div/div/div[2]/pre/div/h4/div
                 except:
                     break
                 comments_list.append({

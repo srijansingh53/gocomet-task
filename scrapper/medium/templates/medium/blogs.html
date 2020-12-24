@@ -12,7 +12,7 @@
                 <!--<button type="button" id="status" class="btn btn-outline-danger float-right">Pending</button>-->
                 <span class="badge badge-danger float-right" id="status">Pending</span>
                 <a class="btn btn-primary" id="url" role="button"  href="{{ blog.link }}" target="_blank">View on Medium</a>
-                <button type="button" class="btn btn-outline-success" onclick="show_func('{{ forloop.counter0 }}', this)">Show Description</button>
+                <button type="button" class="btn btn-outline-success" onclick="show_details('{{ forloop.counter0 }}', this)">Show Description</button>
             </div>
         </div>
     {% endfor %}
